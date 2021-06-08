@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+    <style>
+        canvas {
+            display: block;
+            margin: auto;
+        }
+        #scores {
+            box-sizing: border-box;
+            width: 630px;
+            padding: 10px;
+            background-color: lightgray;
+            margin: auto
+        }
+    </style>
+</head>
+<body>
+    <div id="scores">
+        <p>Health: <span id="health">100</span></p>
+    </div>
+    <canvas id="canvas" width="650" height="650" style="border: 1px solid black;"></canvas>
+</body>
+<script src="utils.js"></script>
+<script src="TileMap.js"></script>
+<script src="Ray.js"></script>
+<script src="Bullet.js"></script>
+<script src="HumanPlayer.js"></script>
+<script src="Enemy.js"></script>
+<script src="script.js"></script>
+</html>
