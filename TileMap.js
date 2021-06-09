@@ -32,9 +32,9 @@ class TileMap {
         const EAST = 2;
         const WEST = 3;
 
-        const cells = [];
+        const cells = new Array(this.mapHeight);
         for (let y = 0; y < this.mapHeight; y++) {
-            cells.push([]);
+            cells[y] = new Array(this.mapWidth);
             for (let x = 0; x < this.mapWidth; x++) {
                 if (this.array[y][x] == 1) {
                     // wall
@@ -50,9 +50,6 @@ class TileMap {
                     if (x > 0 && this.array[y][x - 1] == 0)
                         c.hasEdges[WEST] = true;
                     cells[y][x] = c;
-                }
-                else {
-                    cells[y][x] = null;  
                 }
             }
         }
