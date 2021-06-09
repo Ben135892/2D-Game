@@ -91,10 +91,10 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // cast rays to each boundary, drawing yellow polygon
-    player.look(ctx, visibleTiles, tileMap.boundaries, tileMap.corners, getMouseAngle(), tileWidth, tileHeight);
+    //player.look(ctx, visibleTiles, tileMap.boundaries, tileMap.corners, getMouseAngle(), tileWidth, tileHeight);
 
     // draw visible enemies, only the parts of them intersecting with yellow polygon (the light)
-    ctx.globalCompositeOperation = 'source-atop';
+    //ctx.globalCompositeOperation = 'source-atop';
     ctx.fillStyle = 'red';
 
     for (let i = 0; i < enemies.length; i++) {
@@ -105,12 +105,12 @@ function gameLoop() {
     }
 
     // draw shadows in the background
-    ctx.globalCompositeOperation = 'destination-over'; 
-    ctx.fillStyle = '#0c0c0c'; // grey
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    //ctx.globalCompositeOperation = 'destination-over'; 
+    //ctx.fillStyle = '#0c0c0c'; // grey
+    //ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // draw player
-    ctx.globalCompositeOperation = 'source-over';
+    //ctx.globalCompositeOperation = 'source-over';
     player.draw(ctx, visibleTiles, tileWidth, tileHeight);
     player.drawGun(ctx, visibleTiles, getMouseAngle(), tileWidth, tileHeight);
     
