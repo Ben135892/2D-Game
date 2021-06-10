@@ -7,6 +7,12 @@ class Enemy {
         this.canAttack = true;    
         this.attackInterval = 800; // attack interval in ms
         this.vel = 0.02;
+        this.path = [];
+    }
+
+    roundCoords() {
+        this.x = roundTo2DP(this.x);
+        this.y = roundTo2DP(this.y);
     }
 
     isCollidingWithWall(map) {
@@ -35,6 +41,28 @@ class Enemy {
         const directionX = differenceX / magnitude * this.vel;
         const directionY = differenceY / magnitude * this.vel;
         return {x: directionX, y: directionY};
+    }
+
+    findPath(player, tileMap) {
+        // A* algorithm
+        const solver = new AStar(tileMap);
+        const startPos = {x: Math.floor(this.x), y: Math.floor(this.y)};
+        // move enemy towards center of player
+        const endPos = {x: Math.floor(player.x + player.w / 2), y: Math.floor(player.y + player.h / 2)};
+        this.path = solver.solve(startPos, endPos);
+    }
+
+    move(player, tileMap) {
+        if (this.path.length <= 1)
+            return;
+        let moveX = this.path[1].x - this.path[0].x;
+        let moveY = this.path[1].y - this.path[0].y;
+        this.x += moveX * this.vel;
+        this.y += moveY * this.vel;
+        this.roundCoords();
+        if (this.x == this.path[1].x && this.y == this.path[1].y) {
+            this.findPath(player, tileMap);
+        }
     }
 
     // draw enemy relative to player

@@ -44,6 +44,7 @@ function getMouseAngle() {
 // main game loop
 function gameLoop() {
     // account for user input
+    previousPlayerCoords = {x: player.x + player.w / 2, y: player.y + player.h / 2};
     for (let i = 0; i < keysDown.length; i++) {
         const key = keysDown[i];
         switch(key) {
@@ -82,6 +83,7 @@ function gameLoop() {
             /*const homingDirection = enemies[i].homingDirection(player);
             enemies[i].x += homingDirection.x;
             enemies[i].y += homingDirection.y;*/
+            enemies[i].move(player, tileMap);
         }
     }
 
@@ -152,11 +154,11 @@ const tileWidth = canvas.clientWidth / visibleTiles;
 const tileHeight = canvas.clientHeight / visibleTiles;
 
 const tileMap = new TileMap();
-const player = new HumanPlayer(Math.floor(tileMap.mapWidth / 2), 0, 1, 1);
+const player = new HumanPlayer(4, 9, 1, 1);
 
 // create some enemy objects with random positions, for tesing
 const enemies = [];
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 20; i++) {
     let x, y;
     while (true) {
         x = Math.floor(Math.random() * tileMap.mapWidth);
@@ -165,6 +167,7 @@ for (let i = 0; i < 10; i++) {
             break;
     }
     const enemy = new Enemy(x, y, 1, 1);
+    enemy.findPath(player, tileMap);
     enemies.push(enemy);
 }
 
