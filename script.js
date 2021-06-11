@@ -44,7 +44,6 @@ function getMouseAngle() {
 // main game loop
 function gameLoop() {
     // account for user input
-    previousPlayerCoords = {x: player.x + player.w / 2, y: player.y + player.h / 2};
     for (let i = 0; i < keysDown.length; i++) {
         const key = keysDown[i];
         switch(key) {
@@ -93,10 +92,10 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // cast rays to each boundary, drawing yellow polygon
-    //player.look(ctx, visibleTiles, tileMap.boundaries, tileMap.corners, getMouseAngle(), tileWidth, tileHeight);
+    player.look(ctx, visibleTiles, tileMap.boundaries, tileMap.corners, getMouseAngle(), tileWidth, tileHeight);
 
     // draw visible enemies, only the parts of them intersecting with yellow polygon (the light)
-    //ctx.globalCompositeOperation = 'source-atop';
+    ctx.globalCompositeOperation = 'source-atop';
     ctx.fillStyle = 'red';
 
     for (let i = 0; i < enemies.length; i++) {
@@ -107,12 +106,12 @@ function gameLoop() {
     }
 
     // draw shadows in the background
-    //ctx.globalCompositeOperation = 'destination-over'; 
-    //ctx.fillStyle = '#0c0c0c'; // grey
-    //ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'destination-over'; 
+    ctx.fillStyle = '#0c0c0c'; // grey
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // draw player
-    //ctx.globalCompositeOperation = 'source-over';
+    ctx.globalCompositeOperation = 'source-over';
     player.draw(ctx, visibleTiles, tileWidth, tileHeight);
     player.drawGun(ctx, visibleTiles, getMouseAngle(), tileWidth, tileHeight);
     
@@ -123,7 +122,7 @@ function gameLoop() {
     tileMap.drawOuterBounds(ctx, visibleTiles, player, tileWidth, tileHeight);
 
     for (let i = 0; i < tileMap.boundaries.length; i++) {
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         const pos1 = player.drawRelativeTo({x: tileMap.boundaries[i].x1, y: tileMap.boundaries[i].y1}, visibleTiles);
         const pos2 = player.drawRelativeTo({x: tileMap.boundaries[i].x2, y: tileMap.boundaries[i].y2}, visibleTiles);
         ctx.beginPath();
@@ -136,15 +135,7 @@ function gameLoop() {
         ctx.moveTo(pos1.x *  tileWidth, pos1.y* tileHeight);
         ctx.lineTo(pos2.x* tileWidth, pos2.y * tileHeight);
         ctx.stroke();
-        
     }
-    /*for (let i = 0; i < tileMap.corners.length; i++) {
-        const pos1 = player.drawRelativeTo({x: tileMap.corners[i].x, y: tileMap.corners[i].y}, visibleTiles);
-        ctx.beginPath();
-        ctx.arc(pos1.x * tileWidth, pos1.y * tileHeight, 0.05 * tileWidth, 0, 2 * Math.PI); // circle
-        ctx.fillStyle = 'orange';
-        ctx.fill();
-    }*/
 
     window.requestAnimationFrame(gameLoop);
 }
@@ -154,21 +145,28 @@ const tileWidth = canvas.clientWidth / visibleTiles;
 const tileHeight = canvas.clientHeight / visibleTiles;
 
 const tileMap = new TileMap();
-const player = new HumanPlayer(4, 9, 1, 1);
+const player = new HumanPlayer(Math.floor(tileMap.mapWidth / 2), 0, 1, 1);
 
-// create some enemy objects with random positions, for tesing
+// create some enemy objects with random positions, for testing
 const enemies = [];
-for (let i = 0; i < 20; i++) {
-    let x, y;
-    while (true) {
-        x = Math.floor(Math.random() * tileMap.mapWidth);
-        y = Math.floor(Math.random() * tileMap.mapHeight);
-        if (tileMap.array[y][x] != 1)
+setInterval(() => {
+    if (enemies.length >= 30)
+        return;
+    for (let i = 0; i < 2; i++) {
+        let x, y;
+        while (true) {
+            x = Math.floor(Math.random() * tileMap.mapWidth);
+            y = Math.floor(Math.random() * tileMap.mapHeight);
+            if (tileMap.array[y][x] == 1)
+                continue;
+            if (Math.abs(player.x + player.w / 2 - x) < visibleTiles / 2 ||
+                Math.abs(player.y + player.h / 2 - y) < visibleTiles / 2)
+                continue;
             break;
+        }
+        const enemy = new Enemy(x, y, 1, 1);
+        enemy.findPath(player, tileMap);
+        enemies.push(enemy);
     }
-    const enemy = new Enemy(x, y, 1, 1);
-    enemy.findPath(player, tileMap);
-    enemies.push(enemy);
-}
-
+}, 1000)
 window.requestAnimationFrame(gameLoop);

@@ -170,11 +170,12 @@ class HumanPlayer {
             ctx.lineTo(intersectionDrawPosition.x * tileWidth, intersectionDrawPosition.y * tileHeight);
         }
 
-        if (this.fieldOfViewRadians >= 360) {
+        if (this.fieldOfView >= 360) {
             // connect last ray to first ray
             const intersectionDrawPosition = this.drawRelativeTo({x: rays[0].intersection.x, y: rays[0].intersection.y}, visibleTiles);
             ctx.lineTo(intersectionDrawPosition.x * tileWidth, intersectionDrawPosition.y * tileHeight);
         }
+
         ctx.closePath();
         ctx.fillStyle = 'yellow';
         ctx.fill();

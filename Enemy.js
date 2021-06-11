@@ -59,9 +59,15 @@ class Enemy {
         let moveY = this.path[1].y - this.path[0].y;
         this.x += moveX * this.vel;
         this.y += moveY * this.vel;
+        const originalX = this.x;
+        const originalY = this.y; 
         this.roundCoords();
         if (this.x == this.path[1].x && this.y == this.path[1].y) {
             this.findPath(player, tileMap);
+        }
+        else {
+            this.x = originalX;
+            this.y = originalY;
         }
     }
 
