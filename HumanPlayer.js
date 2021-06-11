@@ -5,7 +5,7 @@ class HumanPlayer {
         this.w = w;
         this.h = h;
         this.health = 100;
-        this.vel = 0.05;
+        this.vel = 0.04;
         this.maxAmmo = 10;
         this.ammo = this.maxAmmo;
         this.canShoot = true;

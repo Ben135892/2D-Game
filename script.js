@@ -78,11 +78,7 @@ function gameLoop() {
             }
         }
         else {
-            // find direction leading directly to player
-            /*const homingDirection = enemies[i].homingDirection(player);
-            enemies[i].x += homingDirection.x;
-            enemies[i].y += homingDirection.y;*/
-            enemies[i].move(player, tileMap);
+            enemies[i].moveToPlayer(player, tileMap);
         }
     }
 
@@ -121,22 +117,6 @@ function gameLoop() {
     // draw out of map walls if in view
     tileMap.drawOuterBounds(ctx, visibleTiles, player, tileWidth, tileHeight);
 
-    for (let i = 0; i < tileMap.boundaries.length; i++) {
-        ctx.lineWidth = 1;
-        const pos1 = player.drawRelativeTo({x: tileMap.boundaries[i].x1, y: tileMap.boundaries[i].y1}, visibleTiles);
-        const pos2 = player.drawRelativeTo({x: tileMap.boundaries[i].x2, y: tileMap.boundaries[i].y2}, visibleTiles);
-        ctx.beginPath();
-        ctx.arc(pos1.x * tileWidth, pos1.y * tileHeight, 0.01 * tileWidth, 0, 2 * Math.PI); // circle
-        ctx.arc(pos2.x * tileWidth, pos2.y * tileHeight, 0.01 * tileWidth, 0, 2 * Math.PI); // circle
-        ctx.fillStyle = 'orange';
-        ctx.strokeStyle = 'orange';
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(pos1.x *  tileWidth, pos1.y* tileHeight);
-        ctx.lineTo(pos2.x* tileWidth, pos2.y * tileHeight);
-        ctx.stroke();
-    }
-
     window.requestAnimationFrame(gameLoop);
 }
 
@@ -147,12 +127,15 @@ const tileHeight = canvas.clientHeight / visibleTiles;
 const tileMap = new TileMap();
 const player = new HumanPlayer(Math.floor(tileMap.mapWidth / 2), 0, 1, 1);
 
-// create some enemy objects with random positions, for testing
+// testing
 const enemies = [];
-setInterval(() => {
-    if (enemies.length >= 30)
+let vel = 0.01;
+function spawn() {
+    if (enemies.length >= 24)
         return;
-    for (let i = 0; i < 2; i++) {
+    if (vel < 0.03)
+        vel += 0.001;
+    for (let i = 0; i < 3; i++) {
         let x, y;
         while (true) {
             x = Math.floor(Math.random() * tileMap.mapWidth);
@@ -165,8 +148,11 @@ setInterval(() => {
             break;
         }
         const enemy = new Enemy(x, y, 1, 1);
+        enemy.vel = vel + Math.random() * 0.001;
         enemy.findPath(player, tileMap);
         enemies.push(enemy);
     }
-}, 1000)
+}
+let interval = setInterval(spawn, 300);
+
 window.requestAnimationFrame(gameLoop);

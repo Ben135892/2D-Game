@@ -14,6 +14,7 @@ class AStar {
     }
 
     getNeighbours(cell) {
+        // no diagonals yet
         const neighbours = [];
         if (cell.x > 0)
             neighbours.push(this.cells[cell.y][cell.x - 1]);
@@ -26,8 +27,9 @@ class AStar {
         return neighbours;
     }
     
-    heuristic(x, y) {
-        return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+    // manhattan distance
+    heuristic(a, b) {
+        return Math.abs(a) + Math.abs(b);
     }
 
     solve(startPos, endPos) {   
