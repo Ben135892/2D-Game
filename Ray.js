@@ -23,8 +23,8 @@ class Ray {
 
         const u = ((x3 - x1) * (y2 - y1) - (y3 - y1) * (x2 - x1)) / denom;
         const t = ((x3 - x1) * (y4 - y3) - (y3 - y1) * (x4 - x3)) / denom;
-
-        if (t > 0 && u >= 0 && u <= 1) {
+    
+        if (t > 0 && u > 0 && u < 1) {
             const intersectionX = x1 + t * (x2 - x1);
             const intersectionY = y1 + t * (y2 - y1);
             return {x: intersectionX, y: intersectionY};            

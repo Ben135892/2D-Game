@@ -131,11 +131,11 @@ const player = new HumanPlayer(Math.floor(tileMap.mapWidth / 2), 0, 1, 1);
 const enemies = [];
 let vel = 0.01;
 function spawn() {
-    if (enemies.length >= 24)
+    if (enemies.length >= 15)
         return;
-    if (vel < 0.03)
+    if (vel < 0.02)
         vel += 0.001;
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 1; i++) {
         let x, y;
         while (true) {
             x = Math.floor(Math.random() * tileMap.mapWidth);
@@ -147,10 +147,11 @@ function spawn() {
                 continue;
             break;
         }
-        const enemy = new Enemy(x, y, 1, 1);
-        enemy.vel = vel + Math.random() * 0.001;
+        const enemy = new Enemy(x, y, 0.5 + 0.5 * Math.random() * 0.5, 0.5 + Math.random() * 0.5);
+        enemy.vel = vel + Math.random() * 0.01;
         enemy.findPath(player, tileMap);
         enemies.push(enemy);
+        break;
     }
 }
 let interval = setInterval(spawn, 300);

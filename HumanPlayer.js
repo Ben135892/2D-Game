@@ -106,7 +106,7 @@ class HumanPlayer {
         rays.push({angle: leftRayAngle, intersection: leftRay.castWalls(boundaries)});
         rays.push({angle: rightRayAngle, intersection: rightRay.castWalls(boundaries)});
 
-        // cast a ray to each corner of every wall, along with two more rays with angle +- 0.0001 radians
+        // cast a ray to each corner of every wall, along with two more rays with angle +- 0.00001 radians
         for (let i = 0; i < corners.length; i++) {
             const rayDirectionX = corners[i].x - rayPos.x;
             const rayDirectionY = corners[i].y - rayPos.y;

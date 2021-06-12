@@ -24,16 +24,29 @@ class AStar {
             neighbours.push(this.cells[cell.y][cell.x + 1]);
         if (cell.y + 1 < this.tileMap.mapHeight)
             neighbours.push(this.cells[cell.y + 1][cell.x]);
+        
+        // diagonals
+        const x = cell.x;
+        const y = cell.y;
+        if (cell.x > 0 && cell.y > 0 && this.cells[y][x - 1] && this.cells[y - 1][x]) 
+            neighbours.push(this.cells[y - 1][x - 1]);
+        if (cell.x + 1 < this.tileMap.mapWidth && cell.y > 0 && this.cells[y][x + 1] && this.cells[y - 1][x])
+            neighbours.push(this.cells[y - 1][x + 1]);
+        if (cell.x > 0 && cell.y + 1 < this.tileMap.mapHeight && this.cells[y][x - 1] && this.cells[y + 1][x])
+            neighbours.push(this.cells[y + 1][x - 1]);
+        if (cell.x + 1 < this.tileMap.mapWidth && cell.y + 1 < this.tileMap.mapHeight && this.cells[y][x + 1] && this.cells[y + 1][x])
+            neighbours.push(this.cells[y + 1][x + 1]);
+        
         return neighbours;
     }
     
     // manhattan distance
     heuristic(a, b) {
-        return Math.abs(a) + Math.abs(b);
+        return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2))
     }
 
     solve(startPos, endPos) {   
-        const start = this.cells[startPos.y][startPos.x]
+        const start = this.cells[startPos.y][startPos.x];
         start.gCost = 0;
 
         const open = [];
