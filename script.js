@@ -91,7 +91,7 @@ function gameLoop() {
     player.look(ctx, visibleTiles, tileMap.boundaries, tileMap.corners, getMouseAngle(), tileWidth, tileHeight);
 
     // draw visible enemies, only the parts of them intersecting with yellow polygon (the light)
-    ctx.globalCompositeOperation = 'source-atop';
+    //ctx.globalCompositeOperation = 'source-atop';
     ctx.fillStyle = 'red';
 
     for (let i = 0; i < enemies.length; i++) {
@@ -149,7 +149,6 @@ function spawn() {
         }
         const enemy = new Enemy(x, y, 0.5 + 0.5 * Math.random() * 0.5, 0.5 + Math.random() * 0.5);
         enemy.vel = vel + Math.random() * 0.01;
-        enemy.findPath(player, tileMap);
         enemies.push(enemy);
         break;
     }

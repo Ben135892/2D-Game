@@ -8,7 +8,7 @@ class Enemy {
         this.attackInterval = 800; // attack interval in ms
         this.vel = 0.02;
         this.path = [];
-        this.foundPath = true;
+        this.foundPath = false;
         this.targetSquare = null;
     }
 
@@ -36,7 +36,7 @@ class Enemy {
         const solver = new AStar(tileMap);
         const startPos = {x: Math.floor(this.x), y: Math.floor(this.y)};
         // move enemy towards center of player
-        const endPos = {x: Math.floor(player.x + player.w / 2), y: Math.floor(player.y + player.h / 2)};
+        const endPos = {x: Math.floor(player.x), y: Math.floor(player.y)};
         this.path = solver.solve(startPos, endPos);
         // error prevention, paths should always have length >= 2
         if (this.path.length == 1)
@@ -118,9 +118,26 @@ class Enemy {
             if (intersectionDistance < distance) 
                 return true;   
             
-            // enemy corner may be on a boundary, and casting a ray to the boundary will always give intersection t = 0, i.e no intersection.
+            // enemy corner may be on a boundary, and casting a ray to the boundary will always give no intersection
+            // check if there is a intersection by checking first tile square in direction of ray
             if (enemyCorners[i].x == Math.floor(enemyCorners[i].x) || enemyCorners[i].y == Math.floor(enemyCorners[i].y)) {
-                const square = tileMap.array[Math.floor(enemyCorners[i].y + 0.00001 * differenceY)][Math.floor(enemyCorners[i].x + 0.00001 * differenceX)];
+                let varianceX, varianceY;
+                varianceX = differenceX > 0 ? 0.00001 : -0.00001;
+                varianceY = differenceY > 0 ? 0.00001 : -0.00001;
+                if (differenceX == 0) 
+                    varianceX = 0;
+                if (differenceY == 0)
+                    varianceY = 0;
+                let square;
+                if (enemyCorners[i].x == Math.floor(enemyCorners[i].x) && enemyCorners[i].y == Math.floor(enemyCorners[i].y)) {
+                    square = tileMap.array[Math.floor(enemyCorners[i].y + varianceY)][Math.floor(enemyCorners[i].x + varianceX)];
+                }
+                else if (enemyCorners[i].x == Math.floor(enemyCorners[i].x)) {
+                    square = tileMap.array[Math.floor(enemyCorners[i].y)][Math.floor(enemyCorners[i].x + varianceX)];
+                }
+                else if (enemyCorners[i].y == Math.floor(enemyCorners[i].y)) {
+                    square = tileMap.array[Math.floor(enemyCorners[i].y + varianceY)][Math.floor(enemyCorners[i].x)];
+                }
                 if (square == 1) {
                     return true;
                 }  
