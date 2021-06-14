@@ -2,10 +2,10 @@ class Bullet {
     constructor(pos, angle) {
         this.pos = pos;
         this.angle = angle;
-        this.vel = 0.2;
+        this.vel = 0.3;
         this.velX = Math.sin(angle) * this.vel;
         this.velY = Math.cos(angle) * this.vel;
-        this.radius = 0.08;
+        this.radius = 0.07;
     }
 
     update() { 
@@ -39,8 +39,8 @@ class Bullet {
         for (let i = 0; i < enemies.length; i++) {
             if (this.isCollidingWithSingleEnemy(enemies[i])) {
                 // if collided with enemy, remove enemy and bullet
-                enemies.splice(enemies.indexOf(enemies[i]), 1);
                 bullets.splice(bullets.indexOf(this), 1);
+                enemies.splice(i, 1);
                 return true;
             }
         }

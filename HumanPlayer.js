@@ -4,43 +4,57 @@ class HumanPlayer {
         this.y = y;
         this.w = w;
         this.h = h;
-        this.health = 100;
-        this.vel = 0.04;
+
+        this.health = 10;
+        this.maxVel = 0.06;
+        this.minVel = 0.04; // colliding velocity
+        this.maxDiagonalVel = 0.05 // 0.707 is 1 / sqrt(2). Finds diagonal velocity
+        this.minDiagonalVel = 0.03;
+        this.vel = this.maxVel;
+        this.diagonalVel = this.maxDiagonalVel;
+
         this.maxAmmo = 10;
         this.ammo = this.maxAmmo;
         this.canShoot = true;
         this.reloadTime = 1000;   // in ms
-        this.fireInterval = 100;  // in ms
-        this.fieldOfView = 90;  // in degrees, can't be in between 1s80 and 360
+        this.fireInterval = 250;  // in ms
+
+        this.fieldOfView = 360;  // in degrees, can't be in between 1s80 and 360
         this.fieldOfViewRadians = toRadians(this.fieldOfView);
         this.gunLength = 0.5;
         this.bullets = [];
+
+        document.getElementById('ammo').innerText = this.ammo;
+        document.getElementById('health').innerText = this.health;
     }
 
     moveRight(map) {
         const mapWidth = map[0].length;
         this.x += this.vel;
+
         if (this.x + this.w >= mapWidth || 
             map[Math.floor(this.y)][Math.floor(this.x + this.w)] == 1 || 
-            map[Math.floor(this.y + this.h * 0.99)][Math.floor(this.x + this.w)] == 1) {
+            map[Math.floor(this.y + this.h * 0.999)][Math.floor(this.x + this.w)] == 1) {
             this.x = Math.floor(this.x + this.w) - this.w;
         }
     }
 
     moveLeft(map) {
         this.x -= this.vel;
+
         if (this.x < 0 || 
             map[Math.floor(this.y)][Math.floor(this.x)] == 1 || 
-            map[Math.floor(this.y + this.h * 0.99)][Math.floor(this.x)] == 1) {
+            map[Math.floor(this.y + this.h * 0.999)][Math.floor(this.x)] == 1) {
             this.x = Math.floor(this.x) + 1;
         }
     }
 
     moveUp(map) {
         this.y -= this.vel;
+
         if (this.y < 0 || 
             map[Math.floor(this.y)][Math.floor(this.x)] == 1 || 
-            map[Math.floor(this.y)][Math.floor(this.x + this.w * 0.99)] == 1) {
+            map[Math.floor(this.y)][Math.floor(this.x + this.w * 0.999)] == 1) {
             this.y = Math.floor(this.y) + 1;
         }
     }
@@ -48,9 +62,10 @@ class HumanPlayer {
     moveDown(map) {
         const mapHeight = map.length;
         this.y += this.vel;
+
         if (this.y + this.h >= mapHeight ||
             map[Math.floor(this.y + this.h)][Math.floor(this.x)] == 1 || 
-            map[Math.floor(this.y + this.h)][Math.floor(this.x + this.w * 0.99)] == 1) {
+            map[Math.floor(this.y + this.h)][Math.floor(this.x + this.w * 0.999)] == 1) {
             this.y = Math.floor(this.y + this.h) - this.h;
         }
     }
@@ -61,17 +76,33 @@ class HumanPlayer {
     }
 
     shootBullet(angle) {
-        const bulletPos = {x: this.x + this.w / 2 + Math.sin(angle) * this.gunLength, y: this.y + this.h / 2 + Math.cos(angle) * this.gunLength};
-        this.bullets.push(new Bullet(bulletPos, angle));
+        if (this.canShoot) {
+            this.canShoot = false;
+            this.ammo--;
+            document.getElementById('ammo').innerText = this.ammo;
+            if (this.ammo <= 0) { // reload
+                setTimeout(() => {
+                    this.canShoot = true;
+                    this.ammo = this.maxAmmo;
+                    document.getElementById('ammo').innerText = this.ammo;
+                }, this.reloadTime);
+            }
+            else {
+                setTimeout(() => this.canShoot = true, this.fireInterval);
+            }
+            const bulletPos = {x: this.x + this.w / 2, y: this.y + this.h / 2};
+            this.bullets.push(new Bullet(bulletPos, angle));
+        }
     }
 
-    updateBullets(tileMap, enemies) {
+    updateBullets(enemies) {
         for (let i = 0; i < this.bullets.length; i++) {
-            this.bullets[i].update();
-            // if collided with wall 
-            if (this.bullets[i].isCollidingWithWall(this.bullets, tileMap) ||
+            // if collided with wall or enemy
+            if (this.bullets[i].isCollidingWithWall(this.bullets, tileMap.array) ||
                 this.bullets[i].isCollidingWithEnemy(enemies, this.bullets)) {
                 i--;
+            } else {
+                this.bullets[i].update();
             }
         }
     }
@@ -103,6 +134,7 @@ class HumanPlayer {
         // cast left-most and right-most rays
         const leftRay = new Ray(rayPos, {x: Math.sin(leftRayAngle), y: Math.cos(leftRayAngle)});
         const rightRay = new Ray(rayPos, {x: Math.sin(rightRayAngle), y: Math.cos(rightRayAngle)});
+        
         rays.push({angle: leftRayAngle, intersection: leftRay.castWalls(boundaries)});
         rays.push({angle: rightRayAngle, intersection: rightRay.castWalls(boundaries)});
 
@@ -134,9 +166,6 @@ class HumanPlayer {
                     ray = new Ray(rayPos, {x: Math.sin(rayAngle), y: Math.cos(rayAngle)});
                 }
                 const intersection = ray.castWalls(boundaries);
-                if (intersection == null) {
-                    continue;
-                }
                     
                 // need to store the angle of the ray
                 rays.push({angle: rayAngle, intersection: intersection});
@@ -166,11 +195,13 @@ class HumanPlayer {
         ctx.moveTo(rayDrawPosition.x * tileWidth, rayDrawPosition.y * tileHeight);
 
         for (let i = 0; i < rays.length; i++) {
+            if (rays[i].intersection == null)
+                continue;
             const intersectionDrawPosition = this.drawRelativeTo({x: rays[i].intersection.x, y: rays[i].intersection.y}, visibleTiles);
             ctx.lineTo(intersectionDrawPosition.x * tileWidth, intersectionDrawPosition.y * tileHeight);
         }
 
-        if (this.fieldOfView >= 360) {
+        if (this.fieldOfView >= 360 && rays[0].intersection != null) {
             // connect last ray to first ray
             const intersectionDrawPosition = this.drawRelativeTo({x: rays[0].intersection.x, y: rays[0].intersection.y}, visibleTiles);
             ctx.lineTo(intersectionDrawPosition.x * tileWidth, intersectionDrawPosition.y * tileHeight);
