@@ -75,10 +75,10 @@ function gameLoop() {
 
     for (let i = 0; i < enemies.length; i++) {
         if (enemies[i].isCollidingWith(player)) {
-            if (!enemies[i].canAttack)
-                continue;
             player.vel = player.minVel;
             player.diagonalVel = player.minDiagonalVel;
+            if (!enemies[i].canAttack)
+                continue;
             player.health--;
             if (player.health <= 0) {
                 // game over

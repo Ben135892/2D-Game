@@ -7,10 +7,6 @@ function roundTo2DP(x) {
     return Math.round(x * 100) / 100;
 }
 
-function roundTo1DP(x) {
-    return Math.round(x * 10) / 10;
-}
-
 // converts angle (positive or negative) measured from positive x axis in an anticlockwise direction in radians,
 // to a (positive) angle measured clockwise from the positive y axis in radians.
 function convertAngle(angle) {

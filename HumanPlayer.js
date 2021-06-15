@@ -8,8 +8,8 @@ class HumanPlayer {
         this.health = 10;
         this.maxVel = 0.06;
         this.minVel = 0.04; // colliding velocity
-        this.maxDiagonalVel = 0.05 // 0.707 is 1 / sqrt(2). Finds diagonal velocity
-        this.minDiagonalVel = 0.03;
+        this.maxDiagonalVel = 0.05 
+        this.minDiagonalVel = 0.035;
         this.vel = this.maxVel;
         this.diagonalVel = this.maxDiagonalVel;
 
