@@ -5,7 +5,7 @@ class HumanPlayer {
         this.w = w;
         this.h = h;
 
-        this.health = 10;
+        this.health = 1000;
         this.maxVel = 0.06;
         this.minVel = 0.04; // colliding velocity
         this.maxDiagonalVel = 0.05 
@@ -13,7 +13,7 @@ class HumanPlayer {
         this.vel = this.maxVel;
         this.diagonalVel = this.maxDiagonalVel;
 
-        this.maxAmmo = 10;
+        this.maxAmmo = 9999;
         this.ammo = this.maxAmmo;
         this.canShoot = true;
         this.reloadTime = 1000;   // in ms
@@ -31,7 +31,6 @@ class HumanPlayer {
     moveRight(map) {
         const mapWidth = map[0].length;
         this.x += this.vel;
-
         if (this.x + this.w >= mapWidth || 
             map[Math.floor(this.y)][Math.floor(this.x + this.w)] == 1 || 
             map[Math.floor(this.y + this.h * 0.999)][Math.floor(this.x + this.w)] == 1) {
@@ -41,7 +40,6 @@ class HumanPlayer {
 
     moveLeft(map) {
         this.x -= this.vel;
-
         if (this.x < 0 || 
             map[Math.floor(this.y)][Math.floor(this.x)] == 1 || 
             map[Math.floor(this.y + this.h * 0.999)][Math.floor(this.x)] == 1) {
@@ -51,7 +49,6 @@ class HumanPlayer {
 
     moveUp(map) {
         this.y -= this.vel;
-
         if (this.y < 0 || 
             map[Math.floor(this.y)][Math.floor(this.x)] == 1 || 
             map[Math.floor(this.y)][Math.floor(this.x + this.w * 0.999)] == 1) {
@@ -62,7 +59,6 @@ class HumanPlayer {
     moveDown(map) {
         const mapHeight = map.length;
         this.y += this.vel;
-
         if (this.y + this.h >= mapHeight ||
             map[Math.floor(this.y + this.h)][Math.floor(this.x)] == 1 || 
             map[Math.floor(this.y + this.h)][Math.floor(this.x + this.w * 0.999)] == 1) {

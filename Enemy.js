@@ -35,10 +35,17 @@ class Enemy {
     findPath(player, tileMap) {
         // A* algorithm
         const solver = new AStar(tileMap);
-        const startPos = {x: Math.floor(this.x), y: Math.floor(this.y)};
-        // move enemy towards center of player
-        const endPos = {x: Math.floor(player.x), y: Math.floor(player.y)};
+        let startPos = {x: Math.round(this.x), y: Math.round(this.y)};
+        if (tileMap.array[Math.floor(startPos.y)][Math.floor(startPos.x)] == 1)
+            startPos = {x: Math.floor(this.x), y: Math.floor(this.y)};
+
+        let endPos = {x: Math.round(player.x), y: Math.round(player.y)};
+        if (tileMap.array[endPos.y][endPos.x] == 1)
+            endPos = {x: Math.floor(this.x), y: Math.floor(this.y)};
+            
         this.path = solver.solve(startPos, endPos);
+        if (this.path.length == 1) // error prevention
+            this.path.push(this.path[0]);
         this.foundPath = true;
     }
 
@@ -107,11 +114,11 @@ class Enemy {
         
         const enemyCorners = [];
         enemyCorners.push({x: this.x, y: this.y});
-        enemyCorners.push({x: this.x + this.w, y: this.y});
-        enemyCorners.push({x: this.x, y: this.y + this.h});
-        enemyCorners.push({x: this.x + this.w, y: this.y + this.h});
+        enemyCorners.push({x: this.x + this.w * 0.999, y: this.y});
+        enemyCorners.push({x: this.x, y: this.y + this.h * 0.999});
+        enemyCorners.push({x: this.x + this.w * 0.999, y: this.y + this.h * 0.999});
 
-        for (let i = 0; i < corners.length; i++) {
+        for (let i = 0; i < 4; i++) {
             const differenceX = corners[i].x - enemyCorners[i].x;
             const differenceY = corners[i].y - enemyCorners[i].y;
             const distance = Math.sqrt(Math.pow(differenceX, 2) + Math.pow(differenceY, 2));

@@ -42,7 +42,7 @@ class AStar {
     
     // manhattan distance
     heuristic(a, b) {
-        return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2))
+        return Math.floor(10 * Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)));
     }
 
     solve(startPos, endPos) {   
@@ -72,12 +72,14 @@ class AStar {
                 const neighbour = neighbours[i];
                 if (neighbour == null || neighbour.visited)
                     continue;
+
                 const distance = this.heuristic(neighbour.x - current.x, neighbour.y - current.y);
                 if (current.gCost + distance < neighbour.gCost) {
                     neighbour.gCost = current.gCost + distance;
                     neighbour.hCost = this.heuristic(endPos.x - neighbour.x, endPos.y - neighbour.y);
                     neighbour.fCost = neighbour.gCost + neighbour.hCost;
                     neighbour.parent = current;
+
                     if (!open.includes(neighbour))
                         open.push(neighbour);
                 }

@@ -95,7 +95,7 @@ function gameLoop() {
             }
         }
         else {
-            enemies[i].moveToPlayer(player, tileMap);
+            enemies[i].moveToPlayer(player, tileMap, enemies, i);
         }
     }
 
@@ -147,31 +147,31 @@ function startGame() {
     player = new HumanPlayer(1, 1, 1, 1);
     enemies = [];
     let intervalTime = 1000;
-    let currentVel = 0.02;
-    let maxVel = 0.025;
+    let currentVel = 0.035;
+    let maxVel = 0.035;
 
     function spawnEnemies() {
-        for (let i = 0; i < 2; i++) { // spawn two enemies at a time
-            let x, y;
-            while (true) {
-                x = Math.floor(Math.random() * tileMap.mapWidth);
-                y = Math.floor(Math.random() * tileMap.mapHeight);
-                if (tileMap.array[y][x] == 1)
-                    continue;
-                if (Math.abs(player.x + player.w / 2 - x) < visibleTiles / 2 ||
-                    Math.abs(player.y + player.h / 2 - y) < visibleTiles / 2)
-                    continue;
+        if (enemies.length >= 24)
+            return;
+        let x, y;
+        while (true) {
+            x = Math.floor(Math.random() * tileMap.mapWidth);
+            y = Math.floor(Math.random() * tileMap.mapHeight);
+            if (tileMap.array[y][x] == 1)
+                continue;
+            if (Math.abs(player.x + player.w / 2 - x) < visibleTiles / 2 ||
+                Math.abs(player.y + player.h / 2 - y) < visibleTiles / 2)
+                continue;
 
-                const width = 0.5 + Math.random() * 0.3;
-                const enemy = new Enemy(x, y, width, width);
-                let vel = currentVel;
-                if (vel > maxVel)
-                    vel = maxVel
-                vel += Math.random() * 0.01;
-                enemy.vel = vel;
-                enemies.push(enemy);
-                break;
-            }
+            const width = 0.3 + Math.random() * 0.5;
+            const enemy = new Enemy(x, y, width, width);
+            let vel = currentVel;
+            if (vel > maxVel)
+                vel = maxVel
+            vel += Math.random() * 0.005;
+            enemy.vel = vel;
+            enemies.push(enemy);
+            break;
         }
         currentVel += 0.0001;
         intervalTime -= 20;
@@ -179,10 +179,7 @@ function startGame() {
             intervalTime = 50;
 
         clearInterval(interval);
-        if (enemies.length >= 30)
-            interval = setInterval(() => spawnEnemies(), intervalTime + Math.random() * 2000);
-        else 
-            interval = setInterval(() => spawnEnemies(), intervalTime);
+        interval = setInterval(() => spawnEnemies(), intervalTime + Math.random() * 50);
     }
 
     interval = setInterval(spawnEnemies, intervalTime);

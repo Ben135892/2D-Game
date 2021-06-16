@@ -149,51 +149,6 @@ class TileMap {
         }
     }
 
-    generateBoundariesBad() {
-
-        // create an array of all wall positions and boundary objects
-        this.walls = [];
-        this.boundaries = [];
-
-        // add the top, right, left and bottom boundaries covering the edge of the map
-        this.boundaries.push({x1: 0, y1: 0, x2: this.mapWidth, y2: 0});
-        this.boundaries.push({x1: 0, y1: this.mapHeight, x2: this.mapWidth, y2: this.mapHeight});
-        this.boundaries.push({x1: 0, y1: 0, x2: 0, y2: this.mapHeight});
-        this.boundaries.push({x1: this.mapWidth, y1: 0, x2: this.mapWidth, y2: this.mapHeight});
-
-        for (let y = 0; y < this.mapHeight; y++) {
-            for (let x = 0; x < this.mapWidth; x++) {
-                if (this.array[y][x] == 1) {
-                    this.walls.push({x: x, y: y});
-                    this.boundaries.push({x1: x, y1: y, x2: x + 1, y2: y});           // top
-                    this.boundaries.push({x1: x, y1: y + 1, x2: x + 1, y2: y + 1});   // bottom
-                    this.boundaries.push({x1: x, y1: y, x2: x, y2: y + 1});           // left
-                    this.boundaries.push({x1: x + 1, y1: y, x2: x + 1, y2: y + 1});   // right
-                }
-            }
-        }
-
-        // create an array containing all the corners of every wall
-        this.corners = [];
-        const cornerMap = new Map();
-
-        for (let i = 0; i < this.boundaries.length; i++) {
-            const pos1 = {x: this.boundaries[i].x1, y: this.boundaries[i].y1};
-            if (!cornerMap.has(pos1)) {
-                cornerMap.set(pos1, true);
-                this.corners.push(pos1);
-            }
-
-            const pos2 = {x: this.boundaries[i].x2, y: this.boundaries[i].y2};
-            if (!cornerMap.has(pos2)) {
-                cornerMap.set(pos2, true);
-                this.corners.push(pos2);
-            }
-
-        }
-
-    }
-
     getTile(x, y) {
         if (this.array[y] == undefined) 
             return null;
