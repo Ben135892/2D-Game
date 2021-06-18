@@ -13,13 +13,10 @@ class Bullet {
         this.pos.y += this.velY;
     }
 
-    isCollidingWithWall(bullets, map) {
-        const mapWidth = map[0].length;
-        const mapHeight = map.length;
-
-        // if bullet has collided with a wall
-        if (this.pos.x < 0 || this.pos.y < 0 || this.pos.x >= mapWidth || this.pos.y >= mapHeight ||
-            map[Math.floor(this.pos.y)][Math.floor(this.pos.x)] == 1) {
+    isCollidingWithWall(bullets, tileMap) {
+        if (this.pos.x < 0 || this.pos.y < 0 || 
+            this.pos.x >= tileMap.mapWidth || this.pos.y >= tileMap.mapHeight ||
+            tileMap.array[Math.floor(this.pos.y)][Math.floor(this.pos.x)] == 1) {
             bullets.splice(bullets.indexOf(this), 1);
             return true;
         }

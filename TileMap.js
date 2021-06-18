@@ -1,5 +1,6 @@
 class TileMap {
     constructor() {
+        this.visibleTiles = 13;
         this.mapWidth = 20;
         this.mapHeight = 20;
         this.array = [
@@ -145,7 +146,6 @@ class TileMap {
                 cornerMap.set(pos2, true);
                 this.corners.push(pos2);
             }
-
         }
     }
 
@@ -155,7 +155,7 @@ class TileMap {
         return this.array[y][x];
     }
     
-    drawWalls(ctx, visibleTiles, player) {
+    drawWalls(ctx, visibleTiles, player, tileWidth, tileHeight) {
         const offsetX = player.x + player.w / 2 - visibleTiles / 2;
         const offsetY = player.y + player.h / 2 - visibleTiles / 2;
         const playerOffsetX = player.x - Math.floor(player.x);
@@ -174,6 +174,7 @@ class TileMap {
                 } 
             }
         }
+        this.drawOuterBounds(ctx, visibleTiles, player, tileWidth, tileHeight);
     }
 
     drawOuterBounds(ctx, visibleTiles, player, tileWidth, tileHeight) {
@@ -197,7 +198,5 @@ class TileMap {
         if (cameraBottomY > tileMap.mapHeight) {
             ctx.fillRect(0, canvasHeight - (cameraBottomY - tileMap.mapHeight) * tileHeight, canvasWidth, (cameraBottomY - tileMap.mapHeight) * tileHeight);
         }
-
     }
-
 }

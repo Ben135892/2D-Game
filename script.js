@@ -1,19 +1,30 @@
 const canvas = document.getElementById("canvas");
-canvas.onselectstart = () => { return false; }
 const ctx = canvas.getContext("2d");
+canvas.onselectstart = () => false;
 
-// store the keys currently pressed down, and mouse coordinates
 const keysDown = [];
 let mouseCoords = {x: 0, y: 0};
 let mouseDown = false;
 
 document.addEventListener('keypress', function(e) {
+    if (e.key == ' ') {
+        // spacebar pressed
+        if (!game.started) {
+            document.getElementById('start').hidden = true;
+            enemies = [];
+            player = new HumanPlayer(0, 0, 1, 1);
+            game = new Game();
+            game.init(enemies, player, tileMap);
+            gameLoop();
+        }
+    }
     if (!keysDown.includes(e.key))
         keysDown.push(e.key);
 });
 document.addEventListener('keyup', function(e) {
     keysDown.splice(keysDown.indexOf(e.key), 1);
 });
+
 canvas.addEventListener('mousemove', function(e) {
     mouseCoords = {x: e.offsetX / tileWidth, y: e.offsetY / tileHeight};
 });
@@ -25,10 +36,8 @@ canvas.addEventListener('mouseup', function(e) {
 });
 
 function getMouseAngle() {
-    const differenceX = mouseCoords.x - visibleTiles / 2;
-    const differenceY = mouseCoords.y - visibleTiles / 2;
-
-    // get mouseAngle in form, 0 <= mouseAngle < 2pi, measured clockwise from positive y axis
+    const differenceX = mouseCoords.x - tileMap.visibleTiles / 2;
+    const differenceY = mouseCoords.y - tileMap.visibleTiles / 2;
     let mouseAngle = Math.atan2(differenceY, differenceX);
     return convertAngle(mouseAngle);
 }
@@ -41,29 +50,29 @@ function gameLoop() {
         const key = keysDown[i];
         switch(key) {
             case 'w':
-                if (keysDown.includes('d') || keysDown.includes('a'))
+                if (keysDown.includes('d') || keysDown.includes('a')) // moving diagonally
                     player.vel = player.diagonalVel;
-                player.moveUp(tileMap.array);
+                player.moveUp(tileMap);
                 break;
             case 'd':
                 if (keysDown.includes('w') || keysDown.includes('s'))
                     player.vel = player.diagonalVel;
-                player.moveRight(tileMap.array);
+                player.moveRight(tileMap);
                 break;
             case 's':
                 if (keysDown.includes('a') || keysDown.includes('d'))
                     player.vel = player.diagonalVel;
-                player.moveDown(tileMap.array);
+                player.moveDown(tileMap);
                 break;
             case 'a':
                 if (keysDown.includes('w') || keysDown.includes('s'))
                     player.vel = player.diagonalVel;
-                player.moveLeft(tileMap.array, false);
+                player.moveLeft(tileMap);
                 break;
         }
     }
 
-    // round the coordinates of the player to 2 d.p
+    // round the coordinates of the player to 2 d.p and reset velocities
     player.roundCoords();
     player.vel = player.maxVel;
     player.diagonalVel = player.maxDiagonalVel;
@@ -71,49 +80,36 @@ function gameLoop() {
     if (mouseDown) 
         player.shootBullet(getMouseAngle());
 
-    player.updateBullets(enemies);
+    player.updateBullets(enemies, tileMap);
 
     for (let i = 0; i < enemies.length; i++) {
-        if (enemies[i].isCollidingWith(player)) {
-            player.vel = player.minVel;
-            player.diagonalVel = player.minDiagonalVel;
-            if (!enemies[i].canAttack)
-                continue;
-            player.health--;
-            if (player.health <= 0) {
-                // game over
-                clearInterval(interval);
-                startGame();
-            }
-            else {
-                enemies[i].canAttack = false;
-                setTimeout(() => {
-                    if (enemies[i])
-                        enemies[i].canAttack = true
-                }, enemies[i].attackInterval);
-                document.getElementById('health').innerText = player.health;
-            }
-        }
-        else {
-            enemies[i].moveToPlayer(player, tileMap, enemies, i);
-        }
+        if (enemies[i].update(player, tileMap)) // if game over
+            break; 
+    }
+
+    if (player.health <= 0) {
+        // game over
+        game.finish();
+        const start = document.getElementById('start');
+        start.hidden = false;
+        start.innerText = 'Game Over - Press Space to Play Again';
+        // return to exit game loop
+        return;
     }
 
     // clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // cast rays to each boundary, drawing yellow polygon
-    player.look(ctx, visibleTiles, tileMap.boundaries, tileMap.corners, getMouseAngle(), tileWidth, tileHeight);
+    // cast rays to boundaries, drawing yellow polygon of light
+    player.look(ctx, tileMap, getMouseAngle(), tileWidth, tileHeight);
 
-    // draw visible enemies, only the parts of them intersecting with yellow polygon (the light)
+    // draw visible enemies and bullets, only the parts of them intersecting with yellow polygon (the light)
     ctx.globalCompositeOperation = 'source-atop';
 
     for (let i = 0; i < enemies.length; i++) {
-        enemies[i].drawRelativeTo(ctx, visibleTiles, player, tileWidth, tileHeight);
+        enemies[i].drawRelativeTo(ctx, tileMap.visibleTiles, player, tileWidth, tileHeight);
     }
-    for (let i = 0; i < player.bullets.length; i++) {
-        player.bullets[i].drawRelativeTo(ctx, visibleTiles, player, tileWidth, tileHeight);
-    }
+    player.drawBullets(ctx, tileMap.visibleTiles, tileWidth, tileHeight);
 
     // draw shadows in the background
     ctx.globalCompositeOperation = 'destination-over'; 
@@ -122,69 +118,27 @@ function gameLoop() {
 
     // draw player
     ctx.globalCompositeOperation = 'source-over';
-    player.draw(ctx, visibleTiles, tileWidth, tileHeight);
-    player.drawGun(ctx, visibleTiles, getMouseAngle(), tileWidth, tileHeight);
+    player.draw(ctx, tileMap.visibleTiles, getMouseAngle(), tileWidth, tileHeight);
     
     // draw the walls
-    tileMap.drawWalls(ctx, visibleTiles, player);
+    tileMap.drawWalls(ctx, tileMap.visibleTiles, player, tileWidth, tileHeight);
 
-    // draw out of map walls if in view
-    tileMap.drawOuterBounds(ctx, visibleTiles, player, tileWidth, tileHeight);
-
-    window.requestAnimationFrame(gameLoop);
+    if (game.started)
+        window.requestAnimationFrame(gameLoop);
 }
-
-const visibleTiles = 13; // 13 visible tiles across x and y axis, must be odd
-const tileWidth = canvas.clientWidth / visibleTiles;
-const tileHeight = canvas.clientHeight / visibleTiles;
 
 const tileMap = new TileMap();
-let player;
+const tileWidth = canvas.clientWidth / tileMap.visibleTiles;
+const tileHeight = canvas.clientHeight / tileMap.visibleTiles;
+let player = new HumanPlayer(0, 0, 1, 1);
 
-// testing
-let interval;
-function startGame() {
-    player = new HumanPlayer(1, 1, 1, 1);
-    enemies = [];
-    let intervalTime = 1000;
-    let currentVel = 0.035;
-    let maxVel = 0.035;
+let enemies = [];
+let game = new Game();
 
-    function spawnEnemies() {
-        if (enemies.length >= 24)
-            return;
-        let x, y;
-        while (true) {
-            x = Math.floor(Math.random() * tileMap.mapWidth);
-            y = Math.floor(Math.random() * tileMap.mapHeight);
-            if (tileMap.array[y][x] == 1)
-                continue;
-            if (Math.abs(player.x + player.w / 2 - x) < visibleTiles / 2 ||
-                Math.abs(player.y + player.h / 2 - y) < visibleTiles / 2)
-                continue;
+// call game loop, which will draw the canvas a single time
+gameLoop();
 
-            const width = 0.3 + Math.random() * 0.5;
-            const enemy = new Enemy(x, y, width, width);
-            let vel = currentVel;
-            if (vel > maxVel)
-                vel = maxVel
-            vel += Math.random() * 0.005;
-            enemy.vel = vel;
-            enemies.push(enemy);
-            break;
-        }
-        currentVel += 0.0001;
-        intervalTime -= 20;
-        if (intervalTime < 50)
-            intervalTime = 50;
 
-        clearInterval(interval);
-        interval = setInterval(() => spawnEnemies(), intervalTime + Math.random() * 50);
-    }
 
-    interval = setInterval(spawnEnemies, intervalTime);
-}
 
-startGame();
 
-window.requestAnimationFrame(gameLoop);

@@ -5,63 +5,83 @@ class HumanPlayer {
         this.w = w;
         this.h = h;
 
-        this.health = 1000;
+        this.maxHealth = 20;
+        this.health = this.maxHealth;
+        this.canHeal;
+        this.healInterval;
+        this.healTime = 5000; // can heal if not attacked for 5 seconds
+
         this.maxVel = 0.06;
-        this.minVel = 0.04; // colliding velocity
+        this.minVel = 0.04; 
+        // colliding velocities
         this.maxDiagonalVel = 0.05 
         this.minDiagonalVel = 0.035;
         this.vel = this.maxVel;
         this.diagonalVel = this.maxDiagonalVel;
 
-        this.maxAmmo = 9999;
+        this.maxAmmo = 12;
         this.ammo = this.maxAmmo;
         this.canShoot = true;
-        this.reloadTime = 1000;   // in ms
-        this.fireInterval = 250;  // in ms
-
-        this.fieldOfView = 360;  // in degrees, can't be in between 1s80 and 360
+        this.reloadTime = 750;    // in ms
+        this.fireInterval = 200;  // in ms
+ 
+        this.fieldOfView = 360;  // in degrees, can't be in between 180 and 360
         this.fieldOfViewRadians = toRadians(this.fieldOfView);
         this.gunLength = 0.5;
         this.bullets = [];
+        this.kills = 0;
 
         document.getElementById('ammo').innerText = this.ammo;
-        document.getElementById('health').innerText = this.health;
+        document.getElementById('current-health').style = 'width: ' + this.healthPercent() + '%';
+        document.getElementById('kills').innerText = this.kills;
     }
 
-    moveRight(map) {
-        const mapWidth = map[0].length;
+    healthPercent() {
+        return this.health / this.maxHealth * 100;
+    }
+
+    heal() {
+        this.healInterval = setInterval(() => {
+             if (this.health < this.maxHealth) {
+                this.health++;
+                document.getElementById('current-health').style = 'width: ' + this.healthPercent() + '%';
+             }
+                
+        }, this.healTime);
+    }
+
+    moveRight(tileMap) {
         this.x += this.vel;
-        if (this.x + this.w >= mapWidth || 
-            map[Math.floor(this.y)][Math.floor(this.x + this.w)] == 1 || 
-            map[Math.floor(this.y + this.h * 0.999)][Math.floor(this.x + this.w)] == 1) {
+        if (this.x + this.w >= tileMap.mapWidth || 
+            tileMap.array[Math.floor(this.y)][Math.floor(this.x + this.w)] == 1 || 
+            tileMap.array[Math.floor(this.y + this.h * 0.999)][Math.floor(this.x + this.w)] == 1) {
             this.x = Math.floor(this.x + this.w) - this.w;
         }
     }
 
-    moveLeft(map) {
+    moveLeft(tileMap) {
         this.x -= this.vel;
         if (this.x < 0 || 
-            map[Math.floor(this.y)][Math.floor(this.x)] == 1 || 
-            map[Math.floor(this.y + this.h * 0.999)][Math.floor(this.x)] == 1) {
+            tileMap.array[Math.floor(this.y)][Math.floor(this.x)] == 1 || 
+            tileMap.array[Math.floor(this.y + this.h * 0.999)][Math.floor(this.x)] == 1) {
             this.x = Math.floor(this.x) + 1;
         }
     }
 
-    moveUp(map) {
+    moveUp(tileMap) {
         this.y -= this.vel;
         if (this.y < 0 || 
-            map[Math.floor(this.y)][Math.floor(this.x)] == 1 || 
-            map[Math.floor(this.y)][Math.floor(this.x + this.w * 0.999)] == 1) {
+            tileMap.array[Math.floor(this.y)][Math.floor(this.x)] == 1 || 
+            tileMap.array[Math.floor(this.y)][Math.floor(this.x + this.w * 0.999)] == 1) {
             this.y = Math.floor(this.y) + 1;
         }
     }
 
-    moveDown(map) {
-        const mapHeight = map.length;
+    moveDown(tileMap) {
         this.y += this.vel;
-        if (this.y + this.h >= mapHeight ||
-            map[Math.floor(this.y + this.h)][Math.floor(this.x)] == 1 || 
-            map[Math.floor(this.y + this.h)][Math.floor(this.x + this.w * 0.999)] == 1) {
+        if (this.y + this.h >= tileMap.mapHeight ||
+            tileMap.array[Math.floor(this.y + this.h)][Math.floor(this.x)] == 1 || 
+            tileMap.array[Math.floor(this.y + this.h)][Math.floor(this.x + this.w * 0.999)] == 1) {
             this.y = Math.floor(this.y + this.h) - this.h;
         }
     }
@@ -91,26 +111,30 @@ class HumanPlayer {
         }
     }
 
-    updateBullets(enemies) {
+    updateBullets(enemies, tileMap) {
         for (let i = 0; i < this.bullets.length; i++) {
             // if collided with wall or enemy
-            if (this.bullets[i].isCollidingWithWall(this.bullets, tileMap.array) ||
-                this.bullets[i].isCollidingWithEnemy(enemies, this.bullets)) {
+            if (this.bullets[i].isCollidingWithWall(this.bullets, tileMap))
                 i--;
+            else if (this.bullets[i].isCollidingWithEnemy(enemies, this.bullets)) {
+                i--;
+                this.kills++;
+                document.getElementById('kills').innerText = this.kills;
             } else {
                 this.bullets[i].update();
             }
         }
     }
 
-    // finds the tile map coordinates of where to draw a point, relative to the player
+    // finds the canvas coordinates of where to draw a point, relative to the player
     drawRelativeTo(pos, visibleTiles) {
         const offsetX = (visibleTiles / 2 - this.w / 2) + (pos.x - this.x);
         const offsetY = (visibleTiles / 2 - this.h / 2) + (pos.y - this.y);
         return {x: offsetX, y: offsetY};
     }
 
-    look(ctx, visibleTiles, boundaries, corners, mouseAngle, tileWidth, tileHeight) {
+    look(ctx, tileMap, mouseAngle, tileWidth, tileHeight) {
+        // method used to cast shadows
         const playerPos = {x: this.x + this.w / 2, y: this.y + this.h / 2};
 
         // for all angles a, 0 <= a < 2pi
@@ -131,13 +155,13 @@ class HumanPlayer {
         const leftRay = new Ray(rayPos, {x: Math.sin(leftRayAngle), y: Math.cos(leftRayAngle)});
         const rightRay = new Ray(rayPos, {x: Math.sin(rightRayAngle), y: Math.cos(rightRayAngle)});
         
-        rays.push({angle: leftRayAngle, intersection: leftRay.castWalls(boundaries)});
-        rays.push({angle: rightRayAngle, intersection: rightRay.castWalls(boundaries)});
+        rays.push({angle: leftRayAngle, intersection: leftRay.castWalls(tileMap.boundaries)});
+        rays.push({angle: rightRayAngle, intersection: rightRay.castWalls(tileMap.boundaries)});
 
         // cast a ray to each corner of every wall, along with two more rays with angle +- 0.00001 radians
-        for (let i = 0; i < corners.length; i++) {
-            const rayDirectionX = corners[i].x - rayPos.x;
-            const rayDirectionY = corners[i].y - rayPos.y;
+        for (let i = 0; i < tileMap.corners.length; i++) {
+            const rayDirectionX = tileMap.corners[i].x - rayPos.x;
+            const rayDirectionY = tileMap.corners[i].y - rayPos.y;
             
             // get rayAngle in form, 0 <= rayAngle < 2pi, measured clockwise from positive y axis
             let rayAngle = Math.atan2(rayDirectionY, rayDirectionX);
@@ -161,7 +185,7 @@ class HumanPlayer {
                         rayAngle -= 0.00002;
                     ray = new Ray(rayPos, {x: Math.sin(rayAngle), y: Math.cos(rayAngle)});
                 }
-                const intersection = ray.castWalls(boundaries);
+                const intersection = ray.castWalls(tileMap.boundaries);
                     
                 // need to store the angle of the ray
                 rays.push({angle: rayAngle, intersection: intersection});
@@ -180,7 +204,7 @@ class HumanPlayer {
 
         rays.sort((a, b) => a.angle - b.angle);
 
-        this.drawVisibilityPolygon(ctx, visibleTiles, rays, tileWidth, tileHeight);
+        this.drawVisibilityPolygon(ctx, tileMap.visibleTiles, rays, tileWidth, tileHeight);
     }
 
     drawVisibilityPolygon(ctx, visibleTiles, rays, tileWidth, tileHeight) {
@@ -208,6 +232,12 @@ class HumanPlayer {
         ctx.fill();
     }
 
+    drawBullets() {
+        for (let i = 0; i < this.bullets.length; i++) {
+            this.bullets[i].drawRelativeTo(ctx, tileMap.visibleTiles, this, tileWidth, tileHeight);
+        }
+    }
+
     drawGun(ctx, visibleTiles, mouseAngle, tileWidth, tileHeight) {
         ctx.beginPath();
         ctx.lineWidth = 5;
@@ -218,12 +248,13 @@ class HumanPlayer {
     }
 
     // draw the player
-    draw(ctx, visibleTiles, tileWidth, tileHeight) {
+    draw(ctx, visibleTiles, mouseAngle, tileWidth, tileHeight) {
         const offsetX = visibleTiles / 2 - this.w / 2;
         const offsetY = visibleTiles / 2 - this.h / 2;
         ctx.beginPath();
-        ctx.fillStyle = "blue";
+        ctx.fillStyle = 'blue';
         ctx.fillRect(offsetX * tileWidth, offsetY * tileHeight, this.w * tileWidth, this.h * tileHeight);
         ctx.stroke();
+        this.drawGun(ctx, visibleTiles, mouseAngle, tileWidth, tileHeight);
     }
 }

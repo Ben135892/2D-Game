@@ -1,0 +1,47 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+canvas {
+    display: block;
+    margin: auto;
+}
+#scores {
+    min-height: 150px;
+    box-sizing: border-box;
+    width: 600px;
+    padding: 10px;
+    background-color: lightgray;
+    margin: auto;
+    margin-top: 20px;
+}
+
+#health {
+    margin: 15px 0;
+}
+#max-health {
+    margin-left: 15%;
+    width: 80%;
+    height: 40px;
+    background-color: red;
+}
+#current-health {
+    height: 100%;
+    background-color: green;
+}
+#health-header {
+    float: left; 
+    position: relative; 
+    top: 10px;
+}
+
+#ammo-header {
+    float: left;
+}
+#ammo {
+    font-size: 40px;
+}
+
+#kills-header {
+    float: right; position: relative; top: 15px; right: 10px;
+}

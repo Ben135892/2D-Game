@@ -40,7 +40,6 @@ class AStar {
         return neighbours;
     }
     
-    // manhattan distance
     heuristic(a, b) {
         return Math.floor(10 * Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)));
     }
