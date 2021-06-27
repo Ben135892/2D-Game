@@ -13,7 +13,7 @@ class Game {
         this.vel = 0.02;
         this.maxVel = 0.04;
         this.velRand = 0.005;
-        this.velIncrease = (this.maxVel - this.vel) / 100; // enemies will reach max velocity after 100 have spawned
+        this.velIncrease = (this.maxVel - this.vel) / 250; // enemies will reach max velocity after 250 have spawned
 
         this.width = 0.3;
         this.widthRand = 0.5;

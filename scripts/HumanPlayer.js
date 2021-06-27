@@ -19,7 +19,7 @@ class HumanPlayer {
         this.vel = this.maxVel;
         this.diagonalVel = this.maxDiagonalVel;
 
-        this.maxAmmo = 12;
+        this.maxAmmo = 10;
         this.ammo = this.maxAmmo;
         this.canShoot = true;
         this.reloadTime = 750;    // in ms
@@ -97,13 +97,18 @@ class HumanPlayer {
             document.getElementById('ammo').innerText = this.ammo;
             if (this.ammo <= 0) { // reload
                 setTimeout(() => {
-                    this.canShoot = true;
-                    this.ammo = this.maxAmmo;
-                    document.getElementById('ammo').innerText = this.ammo;
+                    if (this) {
+                        this.canShoot = true;
+                        this.ammo = this.maxAmmo;
+                        document.getElementById('ammo').innerText = this.ammo;
+                    }
                 }, this.reloadTime);
             }
             else {
-                setTimeout(() => this.canShoot = true, this.fireInterval);
+                setTimeout(() => {
+                    if (this)
+                        this.canShoot = true
+                }, this.fireInterval);
             }
             const bulletPos = {x: this.x + this.w / 2, y: this.y + this.h / 2};
             this.bullets.push(new Bullet(bulletPos, angle));
