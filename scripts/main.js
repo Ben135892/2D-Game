@@ -1,8 +1,11 @@
 const canvas = document.getElementById("canvas");
+
+// canvas width and height proportional to screen size
 canvas.height = window.innerHeight * 0.7;
 canvas.width = canvas.height;
-document.getElementById('scores').style.width = canvas.width + "px";
-const ctx = canvas.getContext("2d");
+document.getElementById('scores').style.width = canvas.width + 'px';
+
+const ctx = canvas.getContext('2d');
 canvas.onselectstart = () => false;
 
 const keysDown = [];
