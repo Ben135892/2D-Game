@@ -14,7 +14,7 @@ class HumanPlayer {
         this.maxVel = 0.06;
         this.minVel = 0.04; 
         // colliding velocities
-        this.maxDiagonalVel = 0.05 
+        this.maxDiagonalVel = 0.05;
         this.minDiagonalVel = 0.035;
         this.vel = this.maxVel;
         this.diagonalVel = this.maxDiagonalVel;

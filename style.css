@@ -8,9 +8,8 @@ canvas {
     margin: auto;
 }
 #scores {
-    min-height: 150px;
+    min-height: 130px;
     box-sizing: border-box;
-    width: 600px;
     padding: 10px;
     background-color: lightgray;
     margin: auto;
@@ -18,11 +17,11 @@ canvas {
 }
 
 #health {
-    margin: 15px 0;
+    margin: 10px 0;
 }
 #max-health {
     margin-left: 15%;
-    width: 80%;
+    width: 70%;
     height: 40px;
     background-color: red;
 }

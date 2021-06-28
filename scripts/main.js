@@ -1,4 +1,7 @@
 const canvas = document.getElementById("canvas");
+canvas.height = window.innerHeight * 0.7;
+canvas.width = canvas.height;
+document.getElementById('scores').style.width = canvas.width + "px";
 const ctx = canvas.getContext("2d");
 canvas.onselectstart = () => false;
 

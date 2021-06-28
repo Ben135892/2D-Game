@@ -5,7 +5,7 @@ class Bullet {
         this.vel = 0.3;
         this.velX = Math.sin(angle) * this.vel;
         this.velY = Math.cos(angle) * this.vel;
-        this.radius = 0.07;
+        this.radius = 0.08;
     }
 
     update() { 
