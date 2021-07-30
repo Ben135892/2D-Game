@@ -14,7 +14,6 @@ class AStar {
     }
 
     getNeighbours(cell) {
-        // no diagonals yet
         const neighbours = [];
         if (cell.x > 0)
             neighbours.push(this.cells[cell.y][cell.x - 1]);
@@ -74,6 +73,7 @@ class AStar {
 
                 const distance = this.heuristic(neighbour.x - current.x, neighbour.y - current.y);
                 if (current.gCost + distance < neighbour.gCost) {
+                    // update neighbour
                     neighbour.gCost = current.gCost + distance;
                     neighbour.hCost = this.heuristic(endPos.x - neighbour.x, endPos.y - neighbour.y);
                     neighbour.fCost = neighbour.gCost + neighbour.hCost;

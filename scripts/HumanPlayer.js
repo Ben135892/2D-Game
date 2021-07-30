@@ -116,17 +116,29 @@ class HumanPlayer {
     }
 
     updateBullets(enemies, tileMap) {
-        for (let i = 0; i < this.bullets.length; i++) {
-            // if collided with wall or enemy
-            if (this.bullets[i].isCollidingWithWall(this.bullets, tileMap))
-                i--;
-            else if (this.bullets[i].isCollidingWithEnemy(enemies, this.bullets)) {
-                i--;
-                this.kills++;
-                document.getElementById('kills').innerText = this.kills;
-            } else {
-                this.bullets[i].update();
+        for (let i = 0; i < this.bullets.length;) {
+            // check for collisions with wall or enemy
+            if (this.bullets[i].isCollidingWithWall(tileMap)) {
+                this.bullets.splice(i, 1);
+                continue;
+            } 
+            // check for collisions with enemies
+            let collided = false;
+            for (let j = 0; j < enemies.length; j++) {
+                if (this.bullets[i].isCollidingWithEnemy(enemies[j])) {
+                    this.bullets.splice(i, 1);
+                    enemies.splice(j, 1);
+                    this.kills++;
+                    document.getElementById('kills').innerText = this.kills;
+                    collided = true;
+                    break;
+                }
             }
+            if (collided) {
+                continue;
+            }
+            this.bullets[i].update();
+            i++;
         }
     }
 

@@ -2,7 +2,7 @@ class Bullet {
     constructor(pos, angle) {
         this.pos = pos;
         this.angle = angle;
-        this.vel = 0.3;
+        this.vel = 0.2;
         this.velX = Math.sin(angle) * this.vel;
         this.velY = Math.cos(angle) * this.vel;
         this.radius = 0.08;
@@ -13,35 +13,17 @@ class Bullet {
         this.pos.y += this.velY;
     }
 
-    isCollidingWithWall(bullets, tileMap) {
-        if (this.pos.x < 0 || this.pos.y < 0 || 
+    isCollidingWithWall(tileMap) {
+        return (this.pos.x < 0 || this.pos.y < 0 || 
             this.pos.x >= tileMap.mapWidth || this.pos.y >= tileMap.mapHeight ||
-            tileMap.array[Math.floor(this.pos.y)][Math.floor(this.pos.x)] == 1) {
-            bullets.splice(bullets.indexOf(this), 1);
-            return true;
-        }
-        return false;
+            tileMap.array[Math.floor(this.pos.y)][Math.floor(this.pos.x)] == 1);
     }
 
-    isCollidingWithSingleEnemy(enemy) {
-        if (this.pos.x + this.radius < enemy.x ||
-            this.pos.x - this.radius > enemy.x + enemy.w ||
-            this.pos.y + this.radius < enemy.y ||
-            this.pos.y - this.radius > enemy.y + enemy.h)
-               return false;
-        return true;
-    }
-
-    isCollidingWithEnemy(enemies, bullets) {
-        for (let i = 0; i < enemies.length; i++) {
-            if (this.isCollidingWithSingleEnemy(enemies[i])) {
-                // if collided with enemy, remove enemy and bullet
-                bullets.splice(bullets.indexOf(this), 1);
-                enemies.splice(i, 1);
-                return true;
-            }
-        }
-        return false;
+    isCollidingWithEnemy(enemy) {
+        return !(this.pos.x + this.radius <= enemy.x ||
+                this.pos.x - this.radius >= enemy.x + enemy.w ||
+                this.pos.y + this.radius <= enemy.y ||
+                this.pos.y - this.radius >= enemy.y + enemy.h);
     }
 
     drawRelativeTo(ctx, visibleTiles, player, tileWidth, tileHeight) {

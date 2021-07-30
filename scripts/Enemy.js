@@ -2,55 +2,52 @@ class Enemy {
     constructor(x, y, w, h) {
         this.x = x;
         this.y = y;
-        this.w = w;
-        this.h = h;        
+        this.w = w; // width
+        this.h = h; // height
 
-        this.canAttack = true;    
-        this.attackInterval = 800; // attack interval in ms
-        this.path;
-        this.foundPath = false;
-        this.targetSquare = null;
+        this.canAttack = true; 
+        this.attackInterval = 800;  // how often the enemy can attack the player when colliding, in ms
+        this.path;                  // array representing path to player, containing position objects
+        this.targetSquare = null;   // position that the enemy is currently moving to
         this.followingPath = false;
     }
 
     update(player, tileMap) {
         if (this.isCollidingWith(player)) {
-            // change players velocity to its colliding velocity
+            // change player velocity to its colliding velocity
             player.vel = player.minVel;
             player.diagonalVel = player.minDiagonalVel;
     
             if (!this.canAttack)
                 return;
-    
+            
+            this.canAttack = false;
             player.health --;
+            // player can no longer heal, since they have been attacked
             if (player.healInterval)
                 clearInterval(player.healInterval);
             document.getElementById('current-health').style = 'width: ' + player.healthPercent() + '%';
 
-            if (player.health <= 0) 
-                return true;
-
+            if (player.health <= 0) {
+                player.health = 0;
+                return;
+            }
             player.heal();
-            this.canAttack = false;
+            
             setTimeout(() => {
                 if (this)
                     this.canAttack = true
             }, this.attackInterval);
-        }
-        else {
+        } else {
             this.moveToPlayer(player, tileMap);
         }
-        return false;
     }
 
     isCollidingWith(player) {
-        if (this.x + this.w <= player.x || this.x >= player.x + player.w || 
-            this.y + this.h <= player.y || this.y >= player.y + player.h)
-            return false;
-        return true;
+        return !(this.x + this.w <= player.x || this.x >= player.x + player.w || 
+                 this.y + this.h <= player.y || this.y >= player.y + player.h)
     }
 
-    // home the enemy in the direction of the player
     homingDirection(player) {
         const differenceX = (player.x + player.w / 2) - (this.x + this.w / 2);
         const differenceY = (player.y + player.h / 2) - (this.y + this.h / 2);
@@ -64,16 +61,14 @@ class Enemy {
     findPath(player, tileMap) {
         // A* algorithm
         const solver = new AStar(tileMap);
-        let startPos = {x: Math.round(this.x), y: Math.round(this.y)};
-        if (tileMap.array[Math.floor(startPos.y)][Math.floor(startPos.x)] == 1)
-            startPos = {x: Math.floor(this.x), y: Math.floor(this.y)};
+        let startPos = {x: Math.floor(this.x), y: Math.floor(this.y)};
 
         let endPos = {x: Math.round(player.x), y: Math.round(player.y)};
         if (tileMap.array[endPos.y][endPos.x] == 1)
             endPos = {x: Math.floor(this.x), y: Math.floor(this.y)};
             
         this.path = solver.solve(startPos, endPos);
-        if (this.path.length == 1) // error prevention
+        if (this.path.length == 1) // error prevention, path must always be of at least length 2
             this.path.push(this.path[0]);
         this.foundPath = true;
     }
@@ -120,7 +115,7 @@ class Enemy {
                 else if (enemyCorners[i].y == Math.floor(enemyCorners[i].y)) {
                     square = tileMap.array[Math.floor(enemyCorners[i].y + varianceY)][Math.floor(enemyCorners[i].x)];
                 }
-                if (square == 1) {
+                if (square == 1) { // if a wall
                     return true;
                 }  
             }
@@ -137,53 +132,47 @@ class Enemy {
 
         // if no walls directly between enemy and player, move straight to player
         if (!this.isObstacleBetween(playerCorners, tileMap)) {
-            this.foundPath = false;
             this.targetSquare = null;
-            this.followingPath = false;
             const homingDirection = this.homingDirection(player);
             this.x += homingDirection.x;
             this.y += homingDirection.y;
             return;
         }
-        if (!this.foundPath) {
-            // find a new path
-            this.findPath(player, tileMap);
-        }
         if (!this.targetSquare) {
-            // find a square to move to, for the A* pathfinding. 
-            // If no objects between enemy and second path square, move to that square
-            // makes for a smoother transition
-            if (this.followingPath) 
+            // find a new path to the player
+            this.findPath(player, tileMap);
+            // if enemy has just found a new path to the enemy, either move to the second or first square in the path
+            if (this.followingPath) {
                 this.targetSquare = this.path[1];
-            else {
+            } else {
+                this.followingPath = true;
                 const corners = [];
                 corners.push({x: this.path[1].x, y: this.path[1].y});
                 corners.push({x: this.path[1].x + 1, y: this.path[1].y});
                 corners.push({x: this.path[1].x, y: this.path[1].y + 1});
                 corners.push({x: this.path[1].x + 1, y: this.path[1].y + 1});
 
-                if (this.isObstacleBetween(corners, tileMap)) 
+                if (this.isObstacleBetween(corners, tileMap)) {
                     this.targetSquare = this.path[0];
-                else 
+                } else {
                     this.targetSquare = this.path[1];
+                }    
             }
         }
         const differenceX = this.targetSquare.x - this.x;
         const differenceY = this.targetSquare.y - this.y;
-        const magnitude = Math.sqrt(Math.pow(differenceX, 2) + Math.pow(differenceY, 2));
-        if (magnitude != 0) {
-            this.x += differenceX / magnitude * this.vel;
-            this.y += differenceY / magnitude * this.vel;
+        if (differenceX == 0 && differenceY == 0) {
+            this.targetSquare = null;
+            return;
         }
-        if (differenceX == 0 && differenceY == 0 ||
-            differenceX > 0 && this.x >= this.targetSquare.x || differenceX < 0 && this.x <= this.targetSquare.x ||
-            differenceY > 0 && this.y >= this.targetSquare.y || differenceY < 0 && this.y <= this.targetSquare.y) 
-        {
+        const magnitude = Math.sqrt(Math.pow(differenceX, 2) + Math.pow(differenceY, 2));
+        this.x += differenceX / magnitude * this.vel;
+        this.y += differenceY / magnitude * this.vel;
+        if (differenceX > 0 && this.x >= this.targetSquare.x || differenceX < 0 && this.x <= this.targetSquare.x ||
+            differenceY > 0 && this.y >= this.targetSquare.y || differenceY < 0 && this.y <= this.targetSquare.y) {
             this.x = this.targetSquare.x;
             this.y = this.targetSquare.y;
-            this.foundPath = false;
             this.targetSquare = null;
-            this.followingPath = true;
         }
     }
 

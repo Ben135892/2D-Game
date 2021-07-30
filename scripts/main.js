@@ -85,12 +85,10 @@ function gameLoop() {
 
     if (mouseDown) 
         player.shootBullet(getMouseAngle());
-
     player.updateBullets(enemies, tileMap);
 
     for (let i = 0; i < enemies.length; i++) {
-        if (enemies[i].update(player, tileMap)) // if game over
-            break; 
+        enemies[i].update(player, tileMap);
     }
 
     if (player.health <= 0) {

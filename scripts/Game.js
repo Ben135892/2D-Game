@@ -4,17 +4,20 @@ class Game {
         this.started = false;
         this.intervalHandler;
 
+        // enemy spawning
         this.spawnInterval = 1000;
         this.intervalDecrease = 20;
         this.spawnRandomness = 500;
         this.minSpawnInterval = 50;
 
+        // enemy max number and velocities
         this.maxEnemies = 30;
         this.vel = 0.02;
         this.maxVel = 0.04;
         this.velRand = 0.005;
         this.velIncrease = (this.maxVel - this.vel) / 250; // enemies will reach max velocity after 250 have spawned
 
+        // enemy width/height
         this.width = 0.3;
         this.widthRand = 0.5;
     }
@@ -53,6 +56,7 @@ class Game {
         if (this.spawnInterval < this.minSpawnInterval)
             this.spawnInterval = this.minSpawnInterval;
 
+        clearInterval(this.intervalHandler);
         this.intervalHandler = setInterval(() => this.spawnEnemy(enemies, player, tileMap), this.spawnInterval + Math.random() * this.spawnRandomness);
     }
 
