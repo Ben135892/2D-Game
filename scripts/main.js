@@ -142,6 +142,7 @@ let game = new Game();
 // call game loop, which will draw the canvas a single time
 gameLoop();
 
+console.log('testing');
 alert('Use the WASD keys to move around and click to shoot');
 
 
