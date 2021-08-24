@@ -16,7 +16,7 @@ document.addEventListener('keypress', function(e) {
     if (e.key == ' ') {
         // spacebar pressed
         if (!game.started) {
-            document.getElementById('start').hidden = true;
+            document.getElementById('start').innerText = 'Use the WASD keys to move and click to shoot';
             enemies = [];
             player = new HumanPlayer(0, 0, 1, 1);
             game = new Game();
@@ -24,7 +24,7 @@ document.addEventListener('keypress', function(e) {
             gameLoop();
         }
     }
-    if (!keysDown.includes(e.key))
+    else if (!keysDown.includes(e.key))
         keysDown.push(e.key);
 });
 document.addEventListener('keyup', function(e) {
@@ -141,7 +141,6 @@ let game = new Game();
 
 // call game loop, which will draw the canvas a single time
 gameLoop();
-
 
 
 
