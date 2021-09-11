@@ -139,8 +139,6 @@ let player = new HumanPlayer(0, 0, 1, 1);
 let enemies = [];
 let game = new Game();
 
-alert('Use the WASD keys to move around and click to shoot');
-
 // call game loop, which will draw the canvas a single time
 gameLoop();
 
